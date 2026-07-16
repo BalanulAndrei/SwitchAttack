@@ -13,9 +13,8 @@ def start():
 
 @app.route("/ping_test")
 def ping_test():
-    """Example function to call from your web interface"""
     if net is None:
-        return "Network is not running yet."
+        return "Network is not running"
     
     h1 = net.get('h1')
     
@@ -23,21 +22,10 @@ def ping_test():
     
     return f"<pre>{output}</pre>"
 
-@app.route("/stop_switch_script")
-def stop_switch():
-    if sw is None:
-        return "Switch not found."
-    
-    sw.cmd('kill %python3')
-    return "Switch script stopped via web interface."
-
-
 if __name__ == "__main__":
-    print("Starting Mininet network in the background...")
     net,sw = make_network()
     
     try:
-        print("Network is running! Starting Flask server...")
         app.run(debug=True, port=5000, use_reloader=False)
     finally:
         print("Stopping network...")
