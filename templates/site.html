@@ -6,8 +6,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<!-- Using Bootstrap for styling -->
 	<link href="./public/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-	<link rel="stylesheet" type="text/css" href="./public/style.css">
-	<!-- Script for implementing the toplogy layout visualization -->
+	<!-- Script for implementing the topology layout visualization -->
 	<script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 </head>
 <style>
@@ -25,6 +24,7 @@
 		background-color: #198754;
 		color: white;
 		min-height: 75vh;
+		min-width: 25vh;
 	}
 	.zona-jos { /*Zona pentru afisatul logurilor*/
 		background-color: #ffc107;
@@ -35,62 +35,10 @@
 	<div class="container-fluid">
 		<div class="row">
 			<!-- Topology -->
-			<div class="col-9  p-0"> 
+			<div class="col-9 p-0"> 
 				<div id="mynetwork"></div>
-				<script type="text/javascript">
-					/*TODO: Schimba scriptul intr un fisier standalone*/
-					let hCnt = 2;
-					let swCnt = 1;
-					var nodes = new vis.DataSet([
-						{ id: 1, label: "User 1" },
-						{ id: 2, label: "User 2" },
-						{ id: 3, label: "Switch 1" }
-					]);
-					var edges = new vis.DataSet([
-						{ from: 1, to: 3 },
-						{ from: 3, to: 2 },
-					]);
-					var container = document.getElementById("mynetwork");
-					var data = {
-						nodes: nodes,
-						edges: edges
-					};
-					function addUser(){
-						hCnt ++;
-						nodes.add({
-							id: swCnt + hCnt,
-							label: "User " + hCnt,
-						});
-					}
-					function addSwitch(){
-						swCnt ++;
-						nodes.add({
-							id: swCnt + hCnt,
-							label: "Switch " + swCnt,
-						})
-					}
-					var options = {
-						manipulation: {
-							enabled: false, 
-							addEdge: function (edgeData, callback) {
-		
-								if (edgeData.from === edgeData.to) {
-									alert("You can't connect a link to itself");
-									callback(null); // Anulează desenarea
-									return;
-								}
-
-								callback(edgeData);
-
-							}
-						}
-					};
-					var network = new vis.Network(container, data, options);
-				function activeazaDesenareLegatura() {
-					/*Make button toggable*/
-					network.addEdgeMode();
-				}
-				</script>
+				<!-- GUI -->
+				<script src="../public/GUI.js" type="text/javascript"></script>
 				<button onclick="addUser();">
 					Add User
 				</button>
