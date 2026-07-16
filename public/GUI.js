@@ -1,8 +1,8 @@
 let hCnt = 2;
 let swCnt = 1;
-var DIR = "/public/images/"
-var userPng = DIR + "laptop.png"
-var switchPng = DIR + "switch.png"
+var DIR = "/public/images/";
+var userPng = DIR + "laptop.png";
+var switchPng = DIR + "switch.png";
 var nodes = new vis.DataSet([
 	{ id: 1, label: "User 1", image: userPng, shape: "image"},
 	{ id: 2, label: "User 2", image: userPng, shape: "image"  },
@@ -43,15 +43,52 @@ var options = {
 		
 		if (edgeData.from === edgeData.to) {
 			alert("You can't connect a link to itself");
-			callback(null); // Anulează desenarea
+			callback(null);
 			return;
 		}
 		callback(edgeData);
+		fetch('/add_link', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					from: edgeData.from,
+					to: edgeData.to
+				})
+			})
+			.then(response => response.json())
+			.then(serverData => {
+				if (serverData.status === "success") {
+					//For testing reasons
+					//TODO: Change back
+					console.log(serverData.message);
+					console.log(serverData.message);
+					console.log(serverData.message);
+					console.log(serverData.message);
+					console.log(serverData.message);
+					console.log(serverData.message);
+					console.log(serverData.message);
+					console.log(serverData.message);
+					console.log(serverData.message);
+					callback(edgeData);
+				} 
+				else {
+					console.error(serverData.message);
+					alert("Backend failed to link nodes.");
+					callback(null);
+				}
+			})
+			.catch(error => {
+				console.error("Network error:", error);
+				alert("Could not reach the server.");
+				callback(null);
+			});
 		}
 	}
 };
 	var network = new vis.Network(container, data, options);
 function activeazaDesenareLegatura() {
-	/*Make button toggable*/
+	/* TODO: Make button toggable*/
 	network.addEdgeMode();
 }
