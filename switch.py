@@ -2,7 +2,9 @@
 from scapy.all import sniff, sendp, Ether
 
 tabela_mac = {}
+
 interfete = ["sw-eth0","sw-eth1","sw-eth2"]
+
 
 def proceseaza_pachet(pachet):
 	if not pachet.haslayer(Ether):
