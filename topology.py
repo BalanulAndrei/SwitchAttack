@@ -25,7 +25,9 @@ def customAddSwitch():
 	ip_switch = None
 	mac_host = None
 	sw = net.addHost(nume_host, ip=ip_host, mac=mac_host)
-	switches.append([])
+
+	switches.append([])	# TODO: logica pentru lista de switches
+
 	print(f"\"{nume_switch}\" was created!")
 
 def customAddLink(host, switch):
