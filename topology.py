@@ -36,7 +36,6 @@ def customAddLink(host, switch):
 	if host in hosts and switch in hosts:
 		print("Cannot link 2 hosts!")
 		return
-
 	global net
 	net.addLink(host, switch) # Am facut link intre dispozitive
 	# Incerc sa fac interfetele
