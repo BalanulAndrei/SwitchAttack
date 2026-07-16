@@ -28,7 +28,7 @@ def customAddSwitch():
 	mac_host = None
 	sw = net.addHost(nume_host, ip=ip_host, mac=mac_host)
 
-	switches.append([])	# TODO: logica pentru lista de switches
+	switches.append({})	# TODO: logica pentru lista de switches
 
 	print(f"\"{nume_switch}\" was created!")
 
@@ -36,12 +36,22 @@ def customAddLink(host, switch):
 	if host in hosts and switch in hosts:
 		print("Cannot link 2 hosts!")
 		return
-	
+	global net
+	net.addLink(host, switch) # Am facut link intre dispozitive
+	# Incerc sa fac interfetele
+	# Fiecare switch va fi un dictionar cu perechile HostXX - ethXX
+	# Caut indicele lui host in hosts si acela va fi 'XX'
+	index = hosts.index(host)
+	# Pozitia i - Host(i+1) / Eth(i+1)
+	nume_host = "host" + str(index+1)
+	nume_interfata = "eth" + str(index+1)
+	switches[index][nume_host] = nume_interfata
+
+
 
 def make_network():
 
-
-	net = Mininet()
+	global net
 
 	h1 = net.addHost('h1', ip='10.0.0.1/24', mac='00:00:00:00:00:01')
 	h2 = net.addHost('h2', ip='10.0.0.2/24', mac='00:00:00:00:00:02')
