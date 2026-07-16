@@ -10,6 +10,8 @@ switches = []
 net = Mininet()
 
 
+# TODO: Create the default topology on start
+
 def customAddHost():
 	global hosts
 	nume_host = "host" + str(len(hosts)+1)
