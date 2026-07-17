@@ -49,7 +49,9 @@ def show_info():
 
 	output += "Hosts:\n"
 	for host in topology.hosts:
-		output += f"  - {host.name}: IP={host.IP()}, MAC={host.MAC()}\n"
+		host_ip = host.params.get('ip', 'Not Assigned')
+		host_mac = host.params.get('mac', 'Not Assigned')
+		output += f"  - {host.name}: IP={host_ip}, MAC={host_mac}\n"
 	
 	output += "\nSwitches:\n"
 	for switch in topology.switches:
@@ -57,8 +59,8 @@ def show_info():
 	
 	output += "\nLinks:\n"
 	for link in topology.net.links:
-		node1 = link.intf1.node.name
-		node2 = link.intf2.node.name
+		node1 = link.intf1.name
+		node2 = link.intf2.name
 		output += f"  - {node1} <---> {node2}\n"
 
 	return f"<pre>{output}</pre>"
