@@ -36,33 +36,58 @@ def customAddSwitch():
 	print(f"\"{nume_switch}\" was created!")
 
 def customAddLinkHS(host, switch):
-	if host in hosts and switch in hosts:
+
+	hosts_names = []
+	switches_names = []
+
+	for x in hosts:
+		hosts_names.append(x.name)
+	for x in switches:
+		switches_names.append(x.name)
+
+	if host in hosts_names and switch in hosts_names:
 		print("Cannot link 2 hosts!")
 		return
-	if host not in hosts or switch not in switches:
+	if not (host in hosts_names and switch  in switches_names):
 		print("Error linking H to S")
 		return
+
+
 	global net
 	net.addLink(host, switch) # Am facut link intre dispozitive
 	# Incerc sa fac interfetele
 	# Fiecare switch va fi un dictionar cu perechile HostXX - ethXX
 	# Caut indicele lui host in hosts si acela va fi 'XX'
-	index_host = hosts.index(host)
-	# Pozitia i - Host(i+1) / Eth(i+1) | Exemplu: lists[0] <==> host1/eth1 
 
-	index_switch = switches.index(switch)
+	index_switch = switches_names.index(switch)
 
-	nume_host = "host" + str(index_host+1)
-	nume_interfata = "eth" + str(index_host+1)
-	interfete_switches[index_switch][nume_host] = nume_interfata
+	interfete_switches[index_switch]["eth" + str(len(interfete_switches[index_switch]))] = host
 
 def customAddLinkSS(switch1, switch2):
-	if switch1 not in switches or switch2 not in switches:
+
+	switches_names = []
+
+	for x in switches:
+		switches_names.append(x.name)
+
+	if switch1 not in switches_names or switch2 not in switches_names:
 		print("Switch error")
 		return
+
 	global net
 	net.addLink(switch1, switch2) 
 
+	try:
+		index1 = switches_names.index(switch1)
+	except:
+		print("Eroare 1")
+	try:
+		index2 = switches_names.index(switch2)
+	except:
+		print("Eroare 2")
+
+	interfete_switches[index1]["eth" + str(len(interfete_switches[index1]))] = switch2
+	interfete_switches[index2]["eth" + str(len(interfete_switches[index2]))] = switch1
 
 
 def createDefaultTopology():
@@ -72,8 +97,8 @@ def createDefaultTopology():
 	customAddHost()
 	customAddSwitch()
 
-	customAddLinkHS(hosts[0], switches[0])
-	customAddLinkHS(hosts[1], switches[0])
+	customAddLinkHS(hosts[0].name, switches[0].name)
+	customAddLinkHS(hosts[1].name, switches[0].name)
 
 	# Links intre host1-switch1 si host2-switch1
 
