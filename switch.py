@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 from scapy.all import sniff, sendp, Ether
+from topology import hosts, switches, interfete_switches
+
+# switches[] retine obiecte de tip mininet switch
 
 tabela_mac = {}
 
