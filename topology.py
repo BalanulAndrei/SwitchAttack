@@ -83,17 +83,7 @@ def make_network():
 		node.cmd('sysctl -w net.ipv6.conf.default.disable_ipv6=1')
 
 	for sw in switches:
-		sw.cmd('python3 switch.py > /tmp/sw1.log 2>&1 &')
-
-	# CLI(net)
-	
-	# sw1.cmd('kill %python3')
-
-	for sw in switches:
-		sw.cmd('kill %python3')
-
-	net.stop()
-
+		sw.cmd('python3 switch.py > /tmp/switches.log 2>&1 &')
 
 
 

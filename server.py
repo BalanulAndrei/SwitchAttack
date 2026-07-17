@@ -86,3 +86,7 @@ if __name__ == "__main__":
 		app.run(debug=True, port=5000, use_reloader=False)
 	finally:
 		print("Stopping network...")
+		for sw in switches:
+			sw.cmd('kill %python3')
+
+		topology.net.stop()
