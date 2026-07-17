@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 from flask import Flask, render_template,request,jsonify
-from topology import make_network, customAddLink
-from mininet import cli 
+# from topology import make_network, customAddLink
+# from mininet import cli 
+import topology
 
 app = Flask(__name__, static_folder="public")
 
-global net,sw
+# global net,sw
 
 @app.route("/")
 def start():
@@ -13,7 +14,7 @@ def start():
 
 @app.route("/show_info")
 def ping_info():
-	if net is None:
+	if topology.net is None:
 		return "Network is not running"
 	
 	# output = cli('dump')
@@ -22,10 +23,10 @@ def ping_info():
 
 @app.route("/ping_test")
 def ping_test():
-	if net is None:
+	if topology.net is None:
 		return "Network is not running"
 
-	h1 = net.get('h1')
+	h1 = topology.net.get(topology.hosts[0])
 
 	output = h1.cmd('ping -c 3 10.0.0.2')
 
@@ -50,13 +51,10 @@ def add_link():
 	})
 
 if __name__ == "__main__":
-	net,sw = make_network()
+
+	topology.make_network()
 
 	try:
 		app.run(debug=True, port=5000, use_reloader=False)
 	finally:
 		print("Stopping network...")
-		if sw:
-			sw.cmd('kill %python3')
-		if net:
-			net.stop()
