@@ -78,7 +78,7 @@ function addSwitch() {
 				shape: "image"
 			});
 		
-			logToSidebar(serverData.message);
+			console.log(serverData.message);
 		} else {
 			console.error("Backend error:", serverData.message);
 		}
@@ -139,8 +139,6 @@ var options = {
 			.then(response => response.json())
 			.then(serverData => {
 				if (serverData.status === "success") {
-					//For testing reasons
-					//TODO: Change back
 					console.log(serverData.message);
 					callback(edgeData);
 				} 

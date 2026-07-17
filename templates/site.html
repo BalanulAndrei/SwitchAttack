@@ -43,9 +43,9 @@
 		overflow-y: auto;
 		overflow-anchor: auto;
 		
-		height: 75vh;
-        max-height: 75vh;
-        min-width: 25vh;
+		height: 24.5vh;
+		max-height: 24.5vh;
+		min-width: 25vw;
 		padding: 10px;
 		position: fixed;
 		left: 25vw;
@@ -123,8 +123,8 @@
 					}
 
 					function logToSidebar(message) {
-						$("#sidebar-output").append("<div>> " + message + "</div>");
-						$(".zona-dump").scrollTop($(".zona-dump")[0].scrollHeight);
+						$("#sidebar-output").html("<div>> " + message + "</div>");
+						//$(".zona-dump").scrollTop($(".zona-dump")[0].scrollHeight);
 					}
 					var realConsoleLog = console.log;
 
