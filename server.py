@@ -21,11 +21,11 @@ def show_info():
 	output += "======================\n\n"
 
 	output += "Hosts:\n"
-	for host in topology.net.hosts:
+	for host in topology.hosts:
 		output += f"  - {host.name}: IP={host.IP()}, MAC={host.MAC()}\n"
 	
 	output += "\nSwitches:\n"
-	for switch in topology.net.switches:
+	for switch in topology.switches:
 		output += f"  - {switch.name}\n"
 	
 	output += "\nLinks:\n"
@@ -86,7 +86,7 @@ if __name__ == "__main__":
 		app.run(debug=True, port=5000, use_reloader=False)
 	finally:
 		print("Stopping network...")
-		for sw in switches:
+		for sw in topology.switches:
 			sw.cmd('kill %python3')
 
 		topology.net.stop()

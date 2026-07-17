@@ -15,7 +15,10 @@ def customAddHost():
 	global hosts
 	nume_host = "host" + str(len(hosts)+1)
 	ip_host = "10.0.0." + str(len(hosts)+1) + "/24"
-	mac_host = "00:00:00:00:00:" + str(hex(len(hosts)+1))
+	mac_digits = str(hex(len(hosts)+1))[2:]
+	if len(mac_digits) == 1:
+		mac_digits = "0" + mac_digits
+	mac_host = "00:00:00:00:00:" + mac_digits
 	h = net.addHost(nume_host, ip=ip_host, mac=mac_host)
 	hosts.append(h)
 	print(f"\"{nume_host}\" was created!")
