@@ -12,20 +12,33 @@ app = Flask(__name__, static_folder="public")
 def start():
 	return render_template('site.html')
 @app.route("/add_switch", methods=['POST'])
-def add_switch_route():
+def add_switch_topo():
 	try:
 		topology.customAddSwitch() 
 
 		return jsonify({
 				"status": "success", 
-				"message": "A new switch was successfully added to the Mininet topology."
+				"message": "A new switch was successfully added"
 			})
 	except Exception as e:
 		return jsonify({
 			"status": "error", 
 			"message": str(e)
 		}), 500
+@app.route("/add_host", methods=['POST'])
+def add_host_topo():
+	try:
+		topology.customAddHost() 
 
+		return jsonify({
+				"status": "success", 
+				"message": "A new host was successfully added"
+			})
+	except Exception as e:
+		return jsonify({
+			"status": "error", 
+			"message": str(e)
+		}), 500
 @app.route("/show_info")
 def show_info():
 	if topology.net is None:
@@ -68,19 +81,22 @@ def add_link():
 	node_from = int(data.get('from'))
 	node_to = int(data.get('to'))
 
-	node_1 = min(node_from,node_to)
-	node_2 = max(node_from,node_to)
+	node_aux1 = min(node_from,node_to)
+	node_aux2 = max(node_from,node_to)
 
 	if node_from + node_to > 180:
-		nodeSwitch1 = "switch" + str(node_1 - 89)
-		nodeSwitch2 = "switch" + str(node_2 - 89)
-		print(nodeSwitch1 + " & " + nodeSwitch2)
-		topology.customAddLink(nodeSwitch1,nodeSwitch2)
+		node_aux1 -= 89
+		node_aux2 -= 89
+		node_1 = "switch" + str(node_aux1)
+		node_2 = "switch" + str(node_aux2)
+		print(node_1 + " & " + node_2)
+		topology.customAddLinkSS(node_1,node_2)
 	else:
-		nodeHost = "host" + str(node_1)
-		nodeSwitch = "switch" + str(node_2 - 89)
-		print(nodeHost + " & " + nodeSwitch)
-		topology.customAddLink(nodeHost,nodeSwitch2)
+		node_aux2 -= 89
+		node_1 = "host" + str(node_aux1)
+		node_2 = "switch" + str(node_aux2)
+		print(node_1 + " & " + node_2)
+		topology.customAddLinkHS(node_1,node_2)
 
 	if not node_from or not node_to:
 		return jsonify({"status": "error", "message": "Missing ID"}), 1
@@ -89,7 +105,7 @@ def add_link():
 
 	return jsonify({
 	    "status": "success", 
-	    "message": f"Successfully linked {node_from} to {node_to}"
+	    "message": f"Successfully linked {node_1} to {node_2}"
 	})
 
 if __name__ == "__main__":

@@ -35,9 +35,12 @@ def customAddSwitch():
 	interfete_switches.append(dict()) # adaug un dictionar gol pentru a face perechea hostXX <==>ethXX
 	print(f"\"{nume_switch}\" was created!")
 
-def customAddLink(host, switch):
+def customAddLinkHS(host, switch):
 	if host in hosts and switch in hosts:
 		print("Cannot link 2 hosts!")
+		return
+	if host not in hosts or switch not in switches:
+		print("Error linking H to S")
 		return
 	global net
 	net.addLink(host, switch) # Am facut link intre dispozitive
@@ -53,16 +56,24 @@ def customAddLink(host, switch):
 	nume_interfata = "eth" + str(index_host+1)
 	interfete_switches[index_switch][nume_host] = nume_interfata
 
+def customAddLinkSS(switch1, switch2):
+	if switch1 not in switches or switch2 not in switches:
+		print("Switch error")
+		return
+	global net
+	net.addLink(switch1, switch2) 
+
+
 
 def createDefaultTopology():
-	global net, hosts, switches, interfete_switches\
+	global net, hosts, switches, interfete_switches
 	# Default topology without links
 	customAddHost()
 	customAddHost()
 	customAddSwitch()
 
-	customAddLink(hosts[0], switches[0])
-	customAddLink(hosts[1], switches[0])
+	customAddLinkHS(hosts[0], switches[0])
+	customAddLinkHS(hosts[1], switches[0])
 
 	# Links intre host1-switch1 si host2-switch1
 

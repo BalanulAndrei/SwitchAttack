@@ -17,13 +17,33 @@ var data = {
 	nodes: nodes,
 	edges: edges
 };
-function addUser(){
-	hCnt ++;
-	nodes.add({
-		id: hCnt,
-		label: "User " + hCnt,
-		image: userPng,
-		shape: "image"
+
+function addUser() {
+	fetch('/add_host', {
+		method: 'POST',
+		headers: {
+		    'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({ next_id: hCnt + 1 })
+	})
+	.then(response => response.json())
+	.then(serverData => {
+		if (serverData.status === "success") {
+			hCnt ++;
+			nodes.add({
+				id: hCnt,
+				label: "User " + hCnt,
+				image: userPng,
+				shape: "image"
+			});
+		
+			console.log(serverData.message);
+		} else {
+			console.error("Backend error:", serverData.message);
+		}
+	})
+	.catch(error => {
+		console.error("Network error:", error);
 	});
 }
 function addSwitch() {
@@ -66,6 +86,28 @@ var options = {
 			callback(null);
 			return;
 		}
+		if (edgeData.from < 90)
+		{
+			var conEdges = network.getConnectedEdges(edgeData.from);
+			var edgeCount = conEdges.length;
+			if(edgeCount === 1)
+				{
+					alert("A host cannot have more than 2 connections")
+					callback(null);
+					return;
+				}
+		}
+		if (edgeData.to < 90)
+		{
+			var conEdges = network.getConnectedEdges(edgeData.to);
+			var edgeCount = conEdges.length;
+			if(edgeCount === 1)
+				{
+					alert("A host cannot have more than 2 connections")
+					callback(null);
+					return;
+				}
+		}
 		if (edgeData.from + edgeData.to < 90) {
 			alert("You can't connect 2 hosts to themselves")
 			callback(null);
@@ -87,14 +129,6 @@ var options = {
 				if (serverData.status === "success") {
 					//For testing reasons
 					//TODO: Change back
-					console.log(serverData.message);
-					console.log(serverData.message);
-					console.log(serverData.message);
-					console.log(serverData.message);
-					console.log(serverData.message);
-					console.log(serverData.message);
-					console.log(serverData.message);
-					console.log(serverData.message);
 					console.log(serverData.message);
 					callback(edgeData);
 				} 
