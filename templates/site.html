@@ -38,8 +38,14 @@
 	}
 	.zona-jos { /*Zona pentru afisatul logurilor*/
 		background-color: #f8f9fa;
-		min-height: 25vh;
-		max-height: 25vh;
+		
+		overflow-wrap: break-word;
+		overflow-y: auto;
+		overflow-anchor: auto;
+		
+		height: 75vh;
+        max-height: 75vh;
+        min-width: 25vh;
 		padding: 10px;
 		position: fixed;
 		left: 25vw;
@@ -49,6 +55,25 @@
 		border: black;
 		border: 2px solid #adb5bd;
 		border-radius: 20px;
+	}
+	.zona-dump {
+		
+		position: inherit;
+		max-height: 45vh;
+		height: 45vh;
+		
+				border-radius: 20px;
+		padding-top: 10px;
+		padding-left: 10px;
+		margin-right: 10px;
+		background-color: #f1f5f9;
+		color: #212529;
+		border-left: 2px solid #cbd5e1;
+		border-bottom: 2px solid #cbd5e1;
+		border-top: 2px solid #cbd5e1;
+		overflow-wrap: break-word;
+		overflow-y: auto;
+		overflow-anchor: auto;
 	}
 </style>
 <body>
@@ -63,20 +88,28 @@
 			<!-- Options  -->
 			<div class="col-3 zona-dreapta">
 				<div class="d-flex flex-column gap-3">
-        <button class="btn btn-light btn-lg shadow-sm" onclick="addUser();">
-            Add User
-        </button>
-        <button class="btn btn-light btn-lg shadow-sm" onclick="addSwitch();">
-            Add Switch
-        </button>
-        <button class="btn btn-light btn-lg shadow-sm" onclick="activeazaDesenareLegatura()">
-            Add Link
-        </button>
-		<button class="btn btn-light btn-lg shadow-sm">
-			<a href="/show_info">
-				Dump
-			</a>
-		</button>
+				<button class="btn btn-light btn-lg shadow-sm" onclick="addUser();">
+					Add User
+				</button>
+				<button class="btn btn-light btn-lg shadow-sm" onclick="addSwitch();">
+					Add Switch
+				</button>
+				<button class="btn btn-light btn-lg shadow-sm" onclick="activeazaDesenareLegatura()">
+					Add Link
+				</button>
+				<button class="btn btn-light btn-lg shadow-sm" onclick="fetchNetworkDump()">
+					DUMP
+				</button>
+				<div class="zona-dump">
+					<div id="sidebar-output">
+
+					</div>
+				</div>
+				<!-- <button class="btn btn-light btn-lg shadow-sm">
+					<a href="/show_info">
+						Dump
+					</a>
+				</button> -->
         
     </div>
 			</div>
@@ -84,14 +117,32 @@
 		<div class="row p-0">
 			<div class="col-12 zona-jos ">
 				<script>
-				
-				var realConsoleLog = console.log;
-				console.log = function() {
-					var message = [].join.call(arguments, " ");
-					$(".output").append("<div>> " + message + "</div>");
-					$(".zona-jos").scrollTop($(".zona-jos")[0].scrollHeight);
-					realConsoleLog.apply(console, arguments);
-				};
+					function logToBottom(message) {
+						$("#bottom-output").append("<div>> " + message + "</div>");
+						$(".zona-jos").scrollTop($(".zona-jos")[0].scrollHeight);
+					}
+
+					function logToSidebar(message) {
+						$("#sidebar-output").append("<div>> " + message + "</div>");
+						$(".zona-dump").scrollTop($(".zona-dump")[0].scrollHeight);
+					}
+					var realConsoleLog = console.log;
+
+					console.log = function() {
+						var message = [].join.call(arguments, " ");
+					
+						var isSpam = message.includes("Event:") || 
+							message.includes("hover") || 
+							message.includes("pointer") ||
+							message.includes("drag");
+					
+						if (!isSpam) {
+							$(".output").append("<div>> " + message + "</div>");
+							$(".zona-jos").scrollTop($(".zona-jos")[0].scrollHeight);
+						}
+					
+						realConsoleLog.apply(console, arguments);
+					};
 				</script>
 				<div class="output"></div>
 			</div>

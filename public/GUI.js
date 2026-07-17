@@ -17,7 +17,19 @@ var data = {
 	nodes: nodes,
 	edges: edges
 };
-
+function fetchNetworkDump() {
+	fetch('/show_info')
+		.then(response => response.text()) // Parses the return string as text/HTML
+		.then(data => {
+			console.log("Fetched Network Dump");
+		
+			logToSidebar(data); 
+		})
+		.catch(error => {
+			console.error("Failed to fetch dump:", error);
+			logToBottom("Error: Could not reach the server for the network dump.");
+		});
+}
 function addUser() {
 	fetch('/add_host', {
 		method: 'POST',
@@ -66,7 +78,7 @@ function addSwitch() {
 				shape: "image"
 			});
 		
-			console.log(serverData.message);
+			logToSidebar(serverData.message);
 		} else {
 			console.error("Backend error:", serverData.message);
 		}
