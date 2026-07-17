@@ -11,6 +11,20 @@ app = Flask(__name__, static_folder="public")
 @app.route("/")
 def start():
 	return render_template('site.html')
+@app.route("/add_switch", methods=['POST'])
+def add_switch_route():
+	try:
+		topology.customAddSwitch() 
+
+		return jsonify({
+				"status": "success", 
+				"message": "A new switch was successfully added to the Mininet topology."
+			})
+	except Exception as e:
+		return jsonify({
+			"status": "error", 
+			"message": str(e)
+		}), 500
 
 @app.route("/show_info")
 def show_info():

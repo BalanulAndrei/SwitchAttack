@@ -26,14 +26,34 @@ function addUser(){
 		shape: "image"
 	});
 }
-function addSwitch(){
-	swCnt ++;
-	nodes.add({
-		id: swCnt,
-		label: "Switch " + (swCnt - 89),
-		image: switchPng,
-		shape: "image"
+function addSwitch() {
+	fetch('/add_switch', {
+		method: 'POST',
+		headers: {
+		    'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({ next_id: swCnt + 1 })
 	})
+	.then(response => response.json())
+	.then(serverData => {
+		if (serverData.status === "success") {
+			swCnt++;
+		
+			nodes.add({
+				id: swCnt,
+				label: "Switch " + (swCnt - 89),
+				image: switchPng,
+				shape: "image"
+			});
+		
+			console.log(serverData.message);
+		} else {
+			console.error("Backend error:", serverData.message);
+		}
+	})
+	.catch(error => {
+		console.error("Network error:", error);
+	});
 }
 var options = {
 	edges: { color: "black" },
