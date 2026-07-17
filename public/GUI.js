@@ -1,16 +1,16 @@
 let hCnt = 2;
-let swCnt = 1;
+let swCnt = 90;
 var DIR = "/public/images/";
 var userPng = DIR + "laptop.png";
 var switchPng = DIR + "switch.png";
 var nodes = new vis.DataSet([
 	{ id: 1, label: "User 1", image: userPng, shape: "image"},
 	{ id: 2, label: "User 2", image: userPng, shape: "image"  },
-	{ id: 3, label: "Switch 1", image: switchPng, shape: "image" }
+	{ id: 90, label: "Switch 1", image: switchPng, shape: "image" }
 ]);
 var edges = new vis.DataSet([
-	{ from: 1, to: 3 },
-	{ from: 3, to: 2 },
+	{ from: 1, to: 90 },
+	{ from: 90, to: 2 },
 ]);
 var container = document.getElementById("mynetwork");
 var data = {
@@ -20,7 +20,7 @@ var data = {
 function addUser(){
 	hCnt ++;
 	nodes.add({
-		id: swCnt + hCnt,
+		id: hCnt,
 		label: "User " + hCnt,
 		image: userPng,
 		shape: "image"
@@ -29,8 +29,8 @@ function addUser(){
 function addSwitch(){
 	swCnt ++;
 	nodes.add({
-		id: swCnt + hCnt,
-		label: "Switch " + swCnt,
+		id: swCnt,
+		label: "Switch " + (swCnt - 89),
 		image: switchPng,
 		shape: "image"
 	})
@@ -43,6 +43,11 @@ var options = {
 		
 		if (edgeData.from === edgeData.to) {
 			alert("You can't connect a link to itself");
+			callback(null);
+			return;
+		}
+		if (edgeData.from + edgeData.to < 90) {
+			alert("You can't connect 2 hosts to themselves")
 			callback(null);
 			return;
 		}
