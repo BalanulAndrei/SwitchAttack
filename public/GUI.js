@@ -17,9 +17,44 @@ var data = {
 	nodes: nodes,
 	edges: edges
 };
+function fetchPing() {
+	var sourceId = document.getElementById('ping_src').value;
+	var destinationId = document.getElementById('ping_dst').value;
+	
+	if(sourceId === "") {
+		console.log("Please enter a source Id")
+		return;
+	}
+
+	if(destinationId === "") {
+		console.log("Please enter a destination Id")
+		return;
+	}
+	console.log("Attempting to ping from host " + sourceId + " to host " + destinationId);
+
+	fetch('/ping_test', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({ 
+			source: sourceId, 
+			destination: destinationId 
+		})
+	})
+	.then(response => response.text()) 
+	.then(data => {
+		console.log("Ping Results:\n" + "<pre>" + data + "</pre>");
+	})
+	.catch(error => {
+		console.error("Ping error:", error);
+		console.log("Error reaching the server for ping.");
+	});
+	
+}
 function fetchNetworkDump() {
 	fetch('/show_info')
-		.then(response => response.text()) // Parses the return string as text/HTML
+		.then(response => response.text())
 		.then(data => {
 			console.log("Fetched Network Dump");
 		

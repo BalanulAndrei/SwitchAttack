@@ -75,6 +75,10 @@
 		overflow-y: auto;
 		overflow-anchor: auto;
 	}
+	.zona-ping {
+		padding-left: 8vw;
+		padding-top: 5vh;
+	}
 </style>
 <body>
 	<div class="container-fluid p-0">
@@ -105,16 +109,16 @@
 
 					</div>
 				</div>
-				<!-- <button class="btn btn-light btn-lg shadow-sm">
-					<a href="/show_info">
-						Dump
-					</a>
-				</button> -->
-        
-    </div>
 			</div>
 		</div>
 		<div class="row p-0">
+			<div class="zona-ping">
+				<input id="ping_src" class="form-control" style="width: 20vh;" placeholder="Enter source id">
+				<input id="ping_dst" class="form-control" style="width: 20vh;" placeholder="Enter destination id">
+				<button class="btn btn-light btn-lg shadow-sm" style="padding-left: 4vw;" onclick="fetchPing()">
+					PING
+				</button>
+			</div>
 			<div class="col-12 zona-jos ">
 				<script>
 					function logToBottom(message) {

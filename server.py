@@ -64,17 +64,24 @@ def show_info():
 		output += f"  - {node1} <---> {node2}\n"
 
 	return f"<pre>{output}</pre>"
-
-@app.route("/ping_test")
+@app.route("/ping_test", methods=['POST'])
 def ping_test():
 	if topology.net is None:
 		return "Network is not running"
 
-	h1 = topology.net.get(topology.hosts[0])
+	data = request.get_json()
+	host1 = data.get('source')
+	host2 = data.get('destination')
 
-	output = h1.cmd('ping -c 3 10.0.0.2')
+	host1 = "host" + str(host1)
+	host2 = "host" + str(host2)
+	
+	host1 = topology.net.get(host1)
+	destination = topology.net.get(host2)
 
-	return f"<pre>{output}</pre>"
+	output = host1.cmd(f'ping -c 3 {destination.IP()}')
+
+	return output
 
 @app.route("/add_link", methods=['POST'])
 def add_link():
