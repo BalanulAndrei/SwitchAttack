@@ -1,13 +1,21 @@
 #!/usr/bin/env python3
-from scapy.all import sniff, sendp, Ether
+from scapy.all import sniff, sendp, Ether, get_if_list
 from topology import hosts, switches, interfete_switches
 
 # switches[] retine obiecte de tip mininet switch
 
 tabela_mac = {}
 
-interfete = ["sw-eth0","sw-eth1","sw-eth2"]
+interfaces=[]
 
+def get_switch_interfaces():
+	interfaces = []
+
+	for interface in get_if_list():
+		if interface != "lo":
+			interfaces.append(interface)
+
+	return interfaces
 
 def proceseaza_pachet(pachet):
 	if not pachet.haslayer(Ether):
@@ -26,9 +34,11 @@ def proceseaza_pachet(pachet):
 		if interf_iesire != interf_intr:
 			sendp(pachet, iface=interf_iesire, verbose=False)
 	else:
-		for iface in interfete:
+		for iface in interfaces:
 			if iface != interf_intr:
 				sendp(pachet, iface=iface, verbose=False)
 
+interfaces = get_switch_interfaces()
+
 print("Switch is running")
-sniff(iface=interfete,prn=proceseaza_pachet, store=0, filter="inbound")
+sniff(iface=interfaces,prn=proceseaza_pachet, store=0, filter="inbound")
