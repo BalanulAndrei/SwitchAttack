@@ -189,7 +189,7 @@ function startPod() {
 	.catch(error => {
 		console.error(error);
 		// document.getElementById("attack-log").innerText = "Error starting PoD.";
-		console.log("Error starting PoD");
+		console.log("Error starting Pod");
 	});
 }
 

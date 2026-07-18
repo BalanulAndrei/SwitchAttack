@@ -5,31 +5,14 @@ from mininet.net import Mininet
 from mininet.cli import CLI
 
 
-PROJECT_DIR = Path(__file__).resolve().parent
-SWITCH_SCRIPT = PROJECT_DIR / "switch.py"
-
-class CompatibleMininet(Mininet):
-	def get(self, *args):
-		fixed_args = []
-
-		for arg in args:
-			if hasattr(arg, "name"):
-				fixed_args.append(arg.name)
-			else:
-				fixed_args.append(arg)
-
-		return super().get(*fixed_args)
-
-
 # host1 e mereu atacatorul
 
 hosts = []
 switches = []
 interfete_switches = []
 
-net = CompatibleMininet()
+net = Mininet()
 
-network_started = False
 
 
 def get_node_name(node):
@@ -68,7 +51,7 @@ def customAddHost():
 
 	hosts.append(host)
 
-	if network_started:
+	if net:
 		host.cmd("sysctl -w net.ipv6.conf.all.disable_ipv6=1")
 		host.cmd("sysctl -w net.ipv6.conf.default.disable_ipv6=1")
 
@@ -93,7 +76,7 @@ def customAddSwitch():
 	switches.append(switch)
 	interfete_switches.append(dict())
 
-	if network_started:
+	if net:
 		switch.cmd("sysctl -w net.ipv4.ip_forward=0")
 		switch.cmd("sysctl -w net.ipv6.conf.all.disable_ipv6=1")
 		switch.cmd("sysctl -w net.ipv6.conf.default.disable_ipv6=1")
@@ -104,18 +87,14 @@ def customAddSwitch():
 
 
 def startSwitchProcess(switch):
-	if not network_started:
+	if net is None:
 		return
 
 	switch.cmd("pkill -f switch.py")
 
-	log_file = f"/tmp/{switch.name}.log"
-
 	switch.cmd(
-		f"python3 -u {SWITCH_SCRIPT} > {log_file} 2>&1 &"
+		f"python3 -u switch.py > /dev/null 2>&1 &"
 	)
-
-	print(f"{switch.name} switch process started. Log: {log_file}")
 
 
 def customAddLinkHS(host, switch):
@@ -139,19 +118,19 @@ def customAddLinkHS(host, switch):
 	link = net.addLink(host_node, switch_node)
 	link.intf1.config(up=True)
 	link.intf2.config(up=True)
+	
+	if link.intf1.node.name == switch_name:
+		switch_interface = link.intf1.name
+	else:
+		switch_interface = link.intf2.name
 
 	sw_obj = net.get(switch)
 
 	sw_obj.cmd(f'pkill -f "python3 switch.py {switch}"')
 	sw_obj.cmd(f'python3 switch.py {switch} > /tmp/{switch}.log 2>&1 &')
 
-	index_switch = switches_names.index(switch)
-	interfete_switches[index_switch]["eth" + str(len(interfete_switches[index_switch]))] = host
-	
-	if link.intf1.node.name == switch_name:
-		switch_interface = link.intf1.name
-	else:
-		switch_interface = link.intf2.name
+	# index_switch = switches_names.index(switch)
+	# interfete_switches[index_switch]["eth" + str(len(interfete_switches[index_switch]))] = host
 
 	index_switch = switches_names.index(switch_name)
 	interfete_switches[index_switch][switch_interface] = host_name

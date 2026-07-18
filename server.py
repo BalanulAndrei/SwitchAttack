@@ -15,26 +15,30 @@ def start():
 @app.route("/add_switch", methods=['POST'])
 def add_switch_topo():
 	try:
-		topology.customAddSwitch() 
+		switch = topology.customAddSwitch() 
 
 		return jsonify({
 				"status": "success", 
-				"message": "A new switch was successfully added"
+				"message": "A new switch was successfully added",
+				"switch": switch.name
 			})
 	except Exception as e:
 		return jsonify({
 			"status": "error", 
-			"message": str(e)
+			"message": str(e) 
 		}), 500
 @app.route("/add_host", methods=['POST'])
 def add_host_topo():
 	try:
-		topology.customAddHost() 
+		host = topology.customAddHost() 
 
 		return jsonify({
-				"status": "success", 
-				"message": "A new host was successfully added"
-			})
+			"status": "success",
+			"message": f"{host.name} was successfully added.",
+			"host": host.name,
+			"ip": host.params.get("ip", "Not assigned"),
+			"mac": host.params.get("mac", "Not assigned")
+		})
 	except Exception as e:
 		return jsonify({
 			"status": "error", 
@@ -120,28 +124,12 @@ def add_link():
 	    "message": f"Successfully linked {node_1} to {node_2}"
 	})
 
-
-def get_host_ip(host):
-	return host.params.get("ip", "Not assigned")
-
-
-def get_host_mac(host):
-	return host.params.get("mac", "Not assigned")
-
-
-def get_default_attacker():
-	return "host1"
-
-
-def get_default_victim():
-	return "host2"
-
 @app.route("/attack/mac_flood", methods=["POST"])
 def mac_flood_route():
 	try:
 		data = request.get_json() or {}
 
-		attacker = data.get("attacker", get_default_attacker())
+		attacker = data.get("attacker", "host1")
 		count = int(data.get("count", 100))
 		interval = float(data.get("interval", 0.01))
 
@@ -167,8 +155,8 @@ def pod_route():
 	try:
 		data = request.get_json() or {}
 
-		attacker = data.get("attacker", get_default_attacker())
-		victim = data.get("victim", get_default_victim())
+		attacker = data.get("attacker", "host1"())
+		victim = data.get("victim", "host2")
 		interval = float(data.get("interval", 0.01))
 
 		log_path = attack_controller.start_pod(
@@ -188,28 +176,10 @@ def pod_route():
 			"status": "error",
 			"message": str(error)
 		}), 500
-@app.route("/attack/<attack_name>/stop", methods=["POST"])
-def stop_attack_route(attack_name):
-	try:
-		attack_controller.stop_attack(attack_name)
-
-		return jsonify({
-			"status": "success",
-			"message": f"{attack_name} stopped."
-		})
-
-	except Exception as error:
-		return jsonify({
-			"status": "error",
-			"message": str(error)
-		}), 500
-
-
 @app.route("/attack/<attack_name>/log")
 def attack_log_route(attack_name):
 	log = attack_controller.read_attack_log(attack_name)
 	return f"<pre>{log}</pre>"
-
 
 if __name__ == "__main__":
 
