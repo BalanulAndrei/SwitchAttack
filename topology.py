@@ -137,10 +137,17 @@ def customAddLinkHS(host, switch):
 	switch_node = net.get(switch_name)
 
 	link = net.addLink(host_node, switch_node)
+	link.intf1.config(up=True)
+	link.intf2.config(up=True)
 
-	link.intf1.ifconfig("up")
-	link.intf2.ifconfig("up")
+	sw_obj = net.get(switch)
 
+	sw_obj.cmd(f'pkill -f "python3 switch.py {switch}"')
+	sw_obj.cmd(f'python3 switch.py {switch} > /tmp/{switch}.log 2>&1 &')
+
+	index_switch = switches_names.index(switch)
+	interfete_switches[index_switch]["eth" + str(len(interfete_switches[index_switch]))] = host
+	
 	if link.intf1.node.name == switch_name:
 		switch_interface = link.intf1.name
 	else:

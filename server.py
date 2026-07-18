@@ -80,7 +80,9 @@ def ping_test():
 	host1 = topology.net.get(host1)
 	destination = topology.net.get(host2)
 
-	output = host1.cmd(f'ping -c 3 {destination.IP()}')
+	destination_ip = destination.params.get('ip')
+	final_ip = destination_ip[:-3:]
+	output = host1.cmd(f'ping -c 3 {final_ip}')
 
 	return output
 
