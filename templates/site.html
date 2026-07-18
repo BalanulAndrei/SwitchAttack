@@ -79,6 +79,11 @@
 		padding-left: 8vw;
 		padding-top: 5vh;
 	}
+	.zona-attack {
+		position:fixed;
+		left: 85vw;
+
+	}
 </style>
 <body>
 	<div class="container-fluid p-0">
@@ -104,7 +109,7 @@
 				<button class="btn btn-light btn-lg shadow-sm" onclick="fetchNetworkDump()">
 					DUMP
 				</button>
-				<div class="zona-dump">
+				<div class="zona-dump ">
 					<div id="sidebar-output">
 
 					</div>
@@ -149,6 +154,16 @@
 					};
 				</script>
 				<div class="output"></div>
+			</div>
+			<div class="zona-attack">
+				<button class="btn btn-light btn-lg shadow-sm" onclick="startMacFlood()">
+					MAC-Flooding
+				</button>
+				<br>
+				<button class="btn btn-light btn-lg shadow-sm" onclick="startPod()">
+					PoD
+				</button>
+				
 			</div>
 		</div>
 	</div>

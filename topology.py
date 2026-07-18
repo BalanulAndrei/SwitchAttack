@@ -1,98 +1,210 @@
 #!/usr/bin/env python3
+
+from pathlib import Path
 from mininet.net import Mininet
 from mininet.cli import CLI
+
+
+PROJECT_DIR = Path(__file__).resolve().parent
+SWITCH_SCRIPT = PROJECT_DIR / "switch.py"
+
+class CompatibleMininet(Mininet):
+	def get(self, *args):
+		fixed_args = []
+
+		for arg in args:
+			if hasattr(arg, "name"):
+				fixed_args.append(arg.name)
+			else:
+				fixed_args.append(arg)
+
+		return super().get(*fixed_args)
+
+
+# host1 e mereu atacatorul
 
 hosts = []
 switches = []
 interfete_switches = []
 
-net = Mininet()
+net = CompatibleMininet()
 
-# TODO: Create the default topology on start
-# DONE
+network_started = False
+
+
+def get_node_name(node):
+	if hasattr(node, "name"):
+		return node.name
+
+	return node
+
+
+def get_host_names():
+	return [host.name for host in hosts]
+
+
+def get_switch_names():
+	return [switch.name for switch in switches]
+
+
+def generate_host_mac(host_id):
+	return f"00:00:00:00:00:{host_id:02x}"
+
 
 def customAddHost():
 	global hosts
-	nume_host = "host" + str(len(hosts)+1)
-	ip_host = "10.0.0." + str(len(hosts)+1) + "/24"
-	mac_digits = str(hex(len(hosts)+1))[2:]
-	if len(mac_digits) == 1:
-		mac_digits = "0" + mac_digits
-	mac_host = "00:00:00:00:00:" + mac_digits
-	h = net.addHost(nume_host, ip=ip_host, mac=mac_host)
-	hosts.append(h)
+
+	host_id = len(hosts) + 1
+
+	nume_host = "host" + str(host_id)
+	ip_host = "10.0.0." + str(host_id) + "/24"
+	mac_host = generate_host_mac(host_id)
+
+	host = net.addHost(
+		nume_host,
+		ip=ip_host,
+		mac=mac_host
+	)
+
+	hosts.append(host)
+
+	if network_started:
+		host.cmd("sysctl -w net.ipv6.conf.all.disable_ipv6=1")
+		host.cmd("sysctl -w net.ipv6.conf.default.disable_ipv6=1")
+
 	print(f"\"{nume_host}\" was created!")
+
+	return host
+
 
 def customAddSwitch():
 	global switches
-	nume_switch = "switch" + str(len(switches)+1)
-	ip_switch = None
-	mac_switch = None
-	sw = net.addHost(nume_switch, ip=ip_switch, mac=mac_switch)
 
-	switches.append(sw)	# TODO: logica pentru lista de switch
-						# DONE
-	interfete_switches.append(dict()) # adaug un dictionar gol pentru a face perechea hostXX <==>ethXX
+	switch_id = len(switches) + 1
+
+	nume_switch = "switch" + str(switch_id)
+
+	switch = net.addHost(
+		nume_switch,
+		ip=None,
+		mac=None
+	)
+
+	switches.append(switch)
+	interfete_switches.append(dict())
+
+	if network_started:
+		switch.cmd("sysctl -w net.ipv4.ip_forward=0")
+		switch.cmd("sysctl -w net.ipv6.conf.all.disable_ipv6=1")
+		switch.cmd("sysctl -w net.ipv6.conf.default.disable_ipv6=1")
+
 	print(f"\"{nume_switch}\" was created!")
 
+	return switch
+
+
+def startSwitchProcess(switch):
+	if not network_started:
+		return
+
+	switch.cmd("pkill -f switch.py")
+
+	log_file = f"/tmp/{switch.name}.log"
+
+	switch.cmd(
+		f"python3 -u {SWITCH_SCRIPT} > {log_file} 2>&1 &"
+	)
+
+	print(f"{switch.name} switch process started. Log: {log_file}")
+
+
 def customAddLinkHS(host, switch):
+	host_name = get_node_name(host)
+	switch_name = get_node_name(switch)
 
-	hosts_names = []
-	switches_names = []
+	hosts_names = get_host_names()
+	switches_names = get_switch_names()
 
-	for x in hosts:
-		hosts_names.append(x.name)
-	for x in switches:
-		switches_names.append(x.name)
-
-	if host in hosts_names and switch in hosts_names:
-		print("Cannot link 2 hosts!")
-		return
-	if not (host in hosts_names and switch  in switches_names):
-		print("Error linking H to S")
+	if host_name not in hosts_names:
+		print("Error linking H to S: host does not exist")
 		return
 
+	if switch_name not in switches_names:
+		print("Error linking H to S: switch does not exist")
+		return
 
-	global net
-	net.addLink(host, switch) # Am facut link intre dispozitive
-	# Incerc sa fac interfetele
-	# Fiecare switch va fi un dictionar cu perechile HostXX - ethXX
-	# Caut indicele lui host in hosts si acela va fi 'XX'
+	host_node = net.get(host_name)
+	switch_node = net.get(switch_name)
 
-	index_switch = switches_names.index(switch)
+	link = net.addLink(host_node, switch_node)
 
-	interfete_switches[index_switch]["eth" + str(len(interfete_switches[index_switch]))] = host
+	link.intf1.ifconfig("up")
+	link.intf2.ifconfig("up")
+
+	if link.intf1.node.name == switch_name:
+		switch_interface = link.intf1.name
+	else:
+		switch_interface = link.intf2.name
+
+	index_switch = switches_names.index(switch_name)
+	interfete_switches[index_switch][switch_interface] = host_name
+
+	print(f"Linked {host_name} <-> {switch_name}")
+	print(f"{switch_name} interface: {switch_interface}")
+
+	# se porneste switchul pentru a invata noile cai
+
+	startSwitchProcess(switch_node)
+
+	return link
+
 
 def customAddLinkSS(switch1, switch2):
+	switch1_name = get_node_name(switch1)
+	switch2_name = get_node_name(switch2)
 
-	switches_names = []
+	switches_names = get_switch_names()
 
-	for x in switches:
-		switches_names.append(x.name)
-
-	if switch1 not in switches_names or switch2 not in switches_names:
+	if switch1_name not in switches_names or switch2_name not in switches_names:
 		print("Switch error")
 		return
 
-	global net
-	net.addLink(switch1, switch2) 
+	if switch1_name == switch2_name:
+		print("Cannot link switch to itself")
+		return
 
-	try:
-		index1 = switches_names.index(switch1)
-	except:
-		print("Eroare 1")
-	try:
-		index2 = switches_names.index(switch2)
-	except:
-		print("Eroare 2")
+	switch1_node = net.get(switch1_name)
+	switch2_node = net.get(switch2_name)
 
-	interfete_switches[index1]["eth" + str(len(interfete_switches[index1]))] = switch2
-	interfete_switches[index2]["eth" + str(len(interfete_switches[index2]))] = switch1
+	link = net.addLink(switch1_node, switch2_node)
+
+	link.intf1.ifconfig("up")
+	link.intf2.ifconfig("up")
+
+	if link.intf1.node.name == switch1_name:
+		switch1_interface = link.intf1.name
+		switch2_interface = link.intf2.name
+	else:
+		switch1_interface = link.intf2.name
+		switch2_interface = link.intf1.name
+
+	index1 = switches_names.index(switch1_name)
+	index2 = switches_names.index(switch2_name)
+
+	interfete_switches[index1][switch1_interface] = switch2_name
+	interfete_switches[index2][switch2_interface] = switch1_name
+
+	print(f"Linked {switch1_name} <-> {switch2_name}")
+	print(f"{switch1_name} interface: {switch1_interface}")
+	print(f"{switch2_name} interface: {switch2_interface}")
+
+	startSwitchProcess(switch1_node)
+	startSwitchProcess(switch2_node)
+
+	return link
 
 
 def createDefaultTopology():
-	global net, hosts, switches, interfete_switches
-	# Default topology without links
 	customAddHost()
 	customAddHost()
 	customAddSwitch()
@@ -100,31 +212,36 @@ def createDefaultTopology():
 	customAddLinkHS(hosts[0].name, switches[0].name)
 	customAddLinkHS(hosts[1].name, switches[0].name)
 
-	# Links intre host1-switch1 si host2-switch1
-
 
 def make_network():
-
-	global net, hosts, switches, interfete_switches
+	global network_started
 
 	createDefaultTopology()
 
 	net.start()
+	network_started = True
 
-	# stop routing
+	for switch in switches:
+		switch.cmd("sysctl -w net.ipv4.ip_forward=0")
+		switch.cmd("sysctl -w net.ipv6.conf.all.disable_ipv6=1")
+		switch.cmd("sysctl -w net.ipv6.conf.default.disable_ipv6=1")
 
-	for sw in switches:
-		sw.cmd('sysctl -w net.ipv4.ip_forward=0')
-
-	# deactivate IPv6
 	for node in net.hosts:
-		node.cmd('sysctl -w net.ipv6.conf.all.disable_ipv6=1')
-		node.cmd('sysctl -w net.ipv6.conf.default.disable_ipv6=1')
+		node.cmd("sysctl -w net.ipv6.conf.all.disable_ipv6=1")
+		node.cmd("sysctl -w net.ipv6.conf.default.disable_ipv6=1")
 
-	for sw in switches:
-		sw.cmd('python3 switch.py > /tmp/switches.log 2>&1 &')
+	for switch in switches:
+		startSwitchProcess(switch)
 
 
+def stop_network():
+	for switch in switches:
+		switch.cmd("pkill -f switch.py")
 
-if __name__ == '__main__':
+	net.stop()
+
+
+if __name__ == "__main__":
 	make_network()
+	CLI(net)
+	stop_network()

@@ -3,6 +3,7 @@ from flask import Flask, render_template,request,jsonify
 # from topology import make_network, customAddLink
 from mininet import cli 
 import topology
+import attack_controller
 
 app = Flask(__name__, static_folder="public")
 
@@ -116,6 +117,97 @@ def add_link():
 	    "status": "success", 
 	    "message": f"Successfully linked {node_1} to {node_2}"
 	})
+
+
+def get_host_ip(host):
+	return host.params.get("ip", "Not assigned")
+
+
+def get_host_mac(host):
+	return host.params.get("mac", "Not assigned")
+
+
+def get_default_attacker():
+	return "host1"
+
+
+def get_default_victim():
+	return "host2"
+
+@app.route("/attack/mac_flood", methods=["POST"])
+def mac_flood_route():
+	try:
+		data = request.get_json() or {}
+
+		attacker = data.get("attacker", get_default_attacker())
+		count = int(data.get("count", 100))
+		interval = float(data.get("interval", 0.01))
+
+		log_path = attack_controller.start_mac_flood(
+			attacker_name=attacker,
+			count=count,
+			interval=interval
+		)
+
+		return jsonify({
+			"status": "success",
+			"message": f"MAC flood started from {attacker}.",
+			"log": log_path
+		})
+
+	except Exception as error:
+		return jsonify({
+			"status": "error",
+			"message": str(error)
+		}), 500
+@app.route("/attack/pod", methods=["POST"])
+def pod_route():
+	try:
+		data = request.get_json() or {}
+
+		attacker = data.get("attacker", get_default_attacker())
+		victim = data.get("victim", get_default_victim())
+		interval = float(data.get("interval", 0.01))
+
+		log_path = attack_controller.start_pod(
+			attacker_name=attacker,
+			victim_name=victim,
+			interval=interval
+		)
+
+		return jsonify({
+			"status": "success",
+			"message": f"PoD-like started: {attacker} -> {victim}.",
+			"log": log_path
+		})
+
+	except Exception as error:
+		return jsonify({
+			"status": "error",
+			"message": str(error)
+		}), 500
+@app.route("/attack/<attack_name>/stop", methods=["POST"])
+def stop_attack_route(attack_name):
+	try:
+		attack_controller.stop_attack(attack_name)
+
+		return jsonify({
+			"status": "success",
+			"message": f"{attack_name} stopped."
+		})
+
+	except Exception as error:
+		return jsonify({
+			"status": "error",
+			"message": str(error)
+		}), 500
+
+
+@app.route("/attack/<attack_name>/log")
+def attack_log_route(attack_name):
+	log = attack_controller.read_attack_log(attack_name)
+	return f"<pre>{log}</pre>"
+
 
 if __name__ == "__main__":
 

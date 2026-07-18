@@ -122,6 +122,78 @@ function addSwitch() {
 		console.error("Network error:", error);
 	});
 }
+let activeLogInterval = null;
+
+function stopLiveLog() {
+	if (activeLogInterval !== null) {
+		clearInterval(activeLogInterval);
+		activeLogInterval = null;
+	}
+}
+function startLiveLog(logUrl) {
+	stopLiveLog();
+
+	activeLogInterval = setInterval(() => {
+		fetch(logUrl)
+		.then(response => response.text())
+		.then(text => {
+			console.log(text);
+			if (text.includes("finished") || text.includes("MAC flood finished")) {
+                console.log("Attack complete. Stopping live log.");
+                stopLiveLog(); // Clears the interval so it stops fetching
+            }
+		});
+	}, 500);
+}
+function startMacFlood() {
+	stopLiveLog();
+
+	fetch("/attack/mac_flood", {
+		method: "POST",
+		headers: {"Content-Type": "application/json"},
+		body: JSON.stringify({
+			attacker: "host1",
+			count: 200,
+			interval: 0.05
+		})
+	})
+	.then(response => response.json())
+	.then(data => {
+		// document.getElementById("attack-log").innerText = data.message;
+		console.log(data.message);
+		startLiveLog("/attack/mac_flood/log");
+	})
+	.catch(error => {
+		console.error(error);
+		// document.getElementById("attack-log").innerText = "Error starting MAC flood.";
+	});
+}
+function startPod() {
+	stopLiveLog();
+
+	fetch("/attack/pod", {
+		method: "POST",
+		headers: {"Content-Type": "application/json"},
+		body: JSON.stringify({
+			attacker: "host1",
+			victim: "host2",
+			interval: 0.3
+		})
+	})
+	.then(response => response.json())
+	.then(data => {
+		// document.getElementById("attack-log").innerText = data.message;
+		console.log(data.message);
+		startLiveLog("/attack/pod/log");
+	})
+	.catch(error => {
+		console.error(error);
+		// document.getElementById("attack-log").innerText = "Error starting PoD.";
+		console.log("Error starting PoD");
+	});
+}
+
+
 var options = {
 	edges: { color: "black" },
 	manipulation: {
